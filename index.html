@@ -1319,7 +1319,7 @@ function openGate(){
   });
 
   /* STEP 2 (200ms): 문 열림 + 배경 블러 걷힘 */
-  setTimeout(()=>{ intro.classList.add('opening'); }, 200);
+  setTimeout(()=>{ intro.classList.add('opening'); const doorSfx=new Audio('tts/door.mp3'); doorSfx.volume=0.7; doorSfx.play().catch(()=>{}); }, 200);
 
   /* STEP 3 (1100ms): intro 를 z-index:-1 뒤로 보냄 (display:none 없이) */
   setTimeout(()=>{ intro.classList.add('done'); }, 1100);
@@ -1488,7 +1488,7 @@ function renderScene(id){
     if(!ta){
       ta=document.createElement('audio');
       ta.id='scene-tts';
-      ta.preload='auto';
+      ta.preload='auto';ta.loop=true;
       document.body.appendChild(ta);
     }
     ta.pause();ta.src=tsrc;ta.load();
