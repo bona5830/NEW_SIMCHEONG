@@ -1474,6 +1474,29 @@ function renderScene(id){
   };
   const vsrc=sceneVideoMap[id];
 
+  /* ── TTS 오디오 맵 (tts/S1.mp3 ~ tts/S10.mp3) ── */
+  const sceneTTSMap={
+    S1:'tts/S1.mp3',S2:'tts/S2.mp3',S3:'tts/S3.mp3',
+    S4:'tts/S4.mp3',S5:'tts/S5.mp3',S6:'tts/S6.mp3',
+    S7:'tts/S7.mp3',S8:'tts/S8.mp3',S9:'tts/S9.mp3',
+    S10:'tts/S10.mp3',RE_S3:'tts/S3.mp3'
+  };
+  /* 기존 TTS 오디오 정지 후 교체 재생 */
+  let ta=document.getElementById('scene-tts');
+  const tsrc=sceneTTSMap[id];
+  if(tsrc){
+    if(!ta){
+      ta=document.createElement('audio');
+      ta.id='scene-tts';
+      ta.preload='auto';
+      document.body.appendChild(ta);
+    }
+    ta.pause();ta.src=tsrc;ta.load();
+    ta.play().catch(()=>{});
+  } else {
+    if(ta){ta.pause();ta.src='';}
+  }
+
   if(vsrc){
     if(!sv){
       sv=document.createElement('video');
