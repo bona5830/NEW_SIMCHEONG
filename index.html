@@ -833,6 +833,83 @@ html,body{
 #btnR{background:transparent;border:1px solid var(--border);color:var(--jade);padding:10px 26px;font-family:var(--font-ui);font-size:10px;letter-spacing:3px;cursor:pointer;transition:all .22s;text-transform:uppercase}
 #btnR:hover{background:rgba(94,196,176,.07);box-shadow:0 0 10px rgba(94,196,176,.10)}
 
+/* ══════════════════════════════════════════════
+   엔딩 영상 오버레이 — HAPPY/BAD 가로, GAME OVER 세로 대응
+══════════════════════════════════════════════ */
+#endingVideoOverlay{
+  position:fixed;inset:0;z-index:1200;
+  display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(ellipse at center, rgba(94,196,176,.10), transparent 45%),
+    rgba(3,6,10,.94);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  padding:24px;
+}
+#endingVideoBox{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;
+  gap:12px;
+  max-width:96vw;max-height:94vh;
+}
+#endingVideoTitle{
+  font-family:var(--font-ser);
+  color:rgba(240,224,192,.86);
+  font-size:14px;letter-spacing:3px;
+  text-align:center;
+  text-shadow:0 0 12px rgba(200,168,75,.22);
+}
+#endingVideo{
+  background:#000;
+  border:1px solid rgba(200,168,75,.34);
+  box-shadow:0 0 40px rgba(0,0,0,.72), 0 0 24px rgba(94,196,176,.10);
+  border-radius:3px;
+  object-fit:contain;
+}
+/* 가로 엔딩: HAPPY / BAD */
+#endingVideo.landscape{
+  /* 수정: 엔딩 영상이 본편 화면과 비슷한 체감 크기로 보이도록 축소 */
+  width:min(68vw,820px);
+  height:auto;
+  max-height:62vh;
+}
+/* 세로 엔딩: GAME OVER */
+#endingVideo.portrait{
+  /* 수정: 세로형 게임오버 영상도 화면을 과하게 채우지 않도록 축소 */
+  height:min(68vh,650px);
+  width:auto;
+  max-width:70vw;
+}
+#endingVideoClose{
+  background:transparent;
+  border:1px solid rgba(200,168,75,.45);
+  color:rgba(240,224,192,.88);
+  padding:9px 22px;
+  font-family:var(--font-ui);
+  font-size:10px;letter-spacing:2px;
+  cursor:pointer;transition:all .22s;
+}
+#endingVideoClose:hover{
+  background:rgba(200,168,75,.08);
+  box-shadow:0 0 16px rgba(200,168,75,.12);
+}
+#btnEndingVideo{
+  background:transparent;
+  border:1px solid rgba(200,168,75,.55);
+  color:rgba(200,168,75,.92);
+  padding:10px 24px;
+  margin-right:8px;
+  font-family:var(--font-ui);
+  font-size:10px;letter-spacing:3px;
+  cursor:pointer;transition:all .22s;
+  text-transform:uppercase;
+}
+#btnEndingVideo:hover{
+  background:rgba(200,168,75,.08);
+  box-shadow:0 0 18px rgba(200,168,75,.16);
+}
+
+
 .hidden{display:none!important}
 #title{display:none!important}
 
@@ -1196,6 +1273,14 @@ html,body{
 
 <!-- 엔딩 -->
 <div id="ewrap" class="hidden"></div>
+<!-- 엔딩 영상 오버레이 -->
+<div id="endingVideoOverlay" class="hidden">
+  <div id="endingVideoBox">
+    <div id="endingVideoTitle">남겨진 기록 재생</div>
+    <video id="endingVideo" controls playsinline></video>
+    <button id="endingVideoClose" onclick="closeEndingVideo()">닫기</button>
+  </div>
+</div>
 <div id="title"></div>
 
 <script>
@@ -1370,20 +1455,44 @@ function renderScene(id){
   panel.style.animation='none';panel.offsetHeight;panel.style.animation='';
   const lns=typeof sc.dialogue==='function'?sc.dialogue(S):sc.dialogue;
   document.body.classList.toggle('villain',lns.some(l=>VILLAINS.includes(l.speaker)));
-  /* ── 씬 비디오 재생 ── */
+  /* ── 씬별 영상 출력: S1~S10, RE_S3 모두 video 폴더의 mp4 연결 ── */
   const sic=document.getElementById('sic');
-  const VIDEO_SCENES=['S1','S2','S3','RE_S3','S4','S5','S6','S7','S8','S9'];
+  const simg=document.getElementById('simg');
   let sv=document.getElementById('scene-video');
-  if(VIDEO_SCENES.includes(id)){
+  const sceneVideoMap={
+    S1:'video/S1.mp4',
+    S2:'video/S2.mp4',
+    S3:'video/S3.mp4',
+    S4:'video/S4.mp4',
+    S5:'video/S5.mp4',
+    S6:'video/S6.mp4',
+    S7:'video/S7.mp4',
+    S8:'video/S8.mp4',
+    S9:'video/S9.mp4',
+    S10:'video/S10.mp4',
+    RE_S3:'video/RE_S3.mp4'
+  };
+  const vsrc=sceneVideoMap[id];
+
+  if(vsrc){
     if(!sv){
       sv=document.createElement('video');
       sv.id='scene-video';
-      sv.autoplay=true;sv.muted=true;sv.loop=true;sv.playsInline=true;
-      sv.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1;border-radius:inherit;';
-      document.getElementById('simg').appendChild(sv);
+      sv.autoplay=true;
+      sv.muted=true;
+      sv.loop=true;
+      sv.playsInline=true;
+      sv.preload='auto';
+      sv.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1;border-radius:inherit;background:#050a12;';
+      simg.appendChild(sv);
     }
-    sv.src='video/'+id+'.mp4';
-    sv.style.display='block';sv.play().catch(()=>{});
+    if(!sv.src.endsWith(vsrc)){
+      sv.pause();
+      sv.src=vsrc;
+      sv.load();
+    }
+    sv.style.display='block';
+    sv.play().catch(()=>{});
     sic.style.display='none';
     document.getElementById('stag').style.zIndex='2';
   } else {
@@ -1494,9 +1603,55 @@ function showEnd(type,reason){
         <div class="esi"><span class="esl">SURVEILLANCE</span><span class="esv" style="color:var(--crimson)">${S.sv}</span></div>
         <div class="esi"><span class="esl">TIME</span><span class="esv" style="color:var(--gold)">${Math.round(S.tm)}%</span></div>
       </div>
+      <button id="btnEndingVideo" onclick="playEndingVideo('${type}')">남겨진 기록 재생</button>
       <button id="btnR" onclick="restart()">↺ 다시 시작하기</button>
     </div>`;
   document.getElementById('ewrap').classList.remove('hidden');
+}
+
+
+
+/* ══════════════════════════════════════════
+   엔딩 영상 재생 — happy/bad는 가로, over는 세로 영상
+   파일 위치: index.html과 같은 폴더 기준 video/ 폴더
+══════════════════════════════════════════ */
+function getEndingVideoConfig(type){
+  const map={
+    happy:{src:'video/END_H.mp4', cls:'landscape', title:'HAPPY ENDING — 남겨진 기록'},
+    bad:{src:'video/END_B.mp4', cls:'landscape', title:'BAD ENDING — 변환 기록'},
+    over:{src:'video/G_OVER.mp4', cls:'portrait', title:'GAME OVER — 최후 기록'}
+  };
+  return map[type]||map.bad;
+}
+
+function playEndingVideo(type){
+  const cfg=getEndingVideoConfig(type);
+  const ov=document.getElementById('endingVideoOverlay');
+  const v=document.getElementById('endingVideo');
+  const title=document.getElementById('endingVideoTitle');
+  if(!ov||!v)return;
+
+  title.textContent=cfg.title;
+  v.pause();
+  v.removeAttribute('src');
+  v.load();
+  v.className=cfg.cls;
+  v.src=cfg.src;
+  ov.classList.remove('hidden');
+
+  const playPromise=v.play();
+  if(playPromise&&playPromise.catch){
+    playPromise.catch(()=>{
+      /* 브라우저 자동재생이 막히면 컨트롤 버튼으로 수동 재생 */
+    });
+  }
+}
+
+function closeEndingVideo(){
+  const ov=document.getElementById('endingVideoOverlay');
+  const v=document.getElementById('endingVideo');
+  if(v){v.pause();v.currentTime=0;}
+  if(ov)ov.classList.add('hidden');
 }
 
 /* ══════════════════════════════════════════
