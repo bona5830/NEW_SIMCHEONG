@@ -1492,7 +1492,7 @@ function renderScene(id){
       document.body.appendChild(ta);
     }
     ta.pause();ta.src=tsrc;ta.load();
-    const ttsDelay=(id==='S1')?1500:0;
+    const ttsDelay=(id==='S1')?3000:0;
     setTimeout(()=>ta.play().catch(()=>{}),ttsDelay);
   } else {
     if(ta){ta.pause();ta.src='';}
